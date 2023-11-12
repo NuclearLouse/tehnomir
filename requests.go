@@ -12,23 +12,13 @@ import (
 	"github.com/NuclearLouse/tehnomir/utilits"
 )
 
-const (
-	PROTO_TM   = "https"
-	URL_API_TM = "api.tehnomir.com.ua"
-)
-
 type Client struct {
 	cfg    *Config
 	client *http.Client
 }
 
 func New(cfg *Config) *Client {
-	client := http.DefaultClient
-	client.Timeout = cfg.Timeout
-	if client.Timeout == 0 {
-		client.Timeout = time.Duration(3 * time.Second)
-	}
-	return &Client{cfg: cfg, client: client}
+	return &Client{cfg: cfg, client: http.DefaultClient}
 }
 
 func (c *Client) newRequest(path ApiPath, body ...any) (*http.Response, error) {
@@ -47,7 +37,7 @@ func (c *Client) newRequest(path ApiPath, body ...any) (*http.Response, error) {
 
 	req, err := http.NewRequest(
 		http.MethodPost,
-		makeApiPath(path),
+		c.makeApiPath(path),
 		buff)
 	if err != nil {
 		return nil, err
@@ -56,10 +46,10 @@ func (c *Client) newRequest(path ApiPath, body ...any) (*http.Response, error) {
 	return c.client.Do(req)
 }
 
-func makeApiPath(path ApiPath) string {
+func (c *Client) makeApiPath(path ApiPath) string {
 	u := url.URL{
-		Scheme: PROTO_TM,
-		Host:   URL_API_TM,
+		Scheme: c.cfg.Proto,
+		Host:   c.cfg.Host,
 		Path:   string(path),
 	}
 	return u.String()
@@ -99,6 +89,11 @@ func (c *Client) makeRequestBody(path ApiPath, body any) any {
 		}
 	case GetPositionInfo:
 		b, ok := body.(*PositionInfoRequestBody)
+		if ok {
+			b.Token = c.cfg.Token
+		}
+	case BasketDeletePosition:
+		b, ok := body.(*BasketDeletePositionRequestBody)
 		if ok {
 			b.Token = c.cfg.Token
 		}
@@ -431,6 +426,168 @@ func (c *Client) GetPositionInfo(reference string) (*PositionInfoResponse, error
 		return nil, err
 	}
 	var res PositionInfoResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (c *Client) GetBasketPositions() (*BasketPositionsResponse, error) {
+	resp, err := c.newRequest(
+		GetBasketPositions,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var res BasketPositionsResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (c *Client) BasketDeletePosition(basketid int) error {
+	resp, err := c.newRequest(
+		BasketDeletePosition,
+		&BasketDeletePositionRequestBody{
+			BasketID: basketid,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var res SuccessResponseBody
+	if err := json.Unmarshal(body, &res); err != nil {
+		return err
+	}
+	if !res.Success {
+		return fmt.Errorf("failed request")
+	}
+
+	return nil
+}
+
+func (c *Client) BasketClear() error {
+	resp, err := c.newRequest(
+		BasketClear,
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	var res SuccessResponseBody
+	if err := json.Unmarshal(body, &res); err != nil {
+		return err
+	}
+	if !res.Success {
+		return fmt.Errorf("failed request")
+	}
+
+	return nil
+}
+
+func (c *Client) GetCurrencies() (*CurrenciesResponse, error) {
+	resp, err := c.newRequest(
+		GetCurrencies,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var res CurrenciesResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (c *Client) BrandsByCode(code string) (*BrandsByCodeResponse, error) {
+	resp, err := c.newRequest(
+		GetBrandsByCode,
+		&BrandsByCodeRequestBody{
+			Code: code,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var res BrandsByCodeResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (c *Client) PositionStatuses() (*PositionStatusesResponse, error) {
+	resp, err := c.newRequest(
+		GetPositionStatuses,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, makeError(resp.Body)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var res PositionStatusesResponse
 	if err := json.Unmarshal(body, &res); err != nil {
 		return nil, err
 	}
