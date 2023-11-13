@@ -1,36 +1,47 @@
 package tehnomir
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/NuclearLouse/tehnomir/utilits"
 )
 
+var ErrBadResponse error = fmt.Errorf("bad response")
+
 const (
 	EUR Currency = "EUR"
 	USD Currency = "USD"
 
-	TestConnect ApiPath = "test/connect"
-	PriceSearch ApiPath = "price/search"
+	TestConnect apiPath = "test/connect"
 
-	GetUnloads    ApiPath = "unload/search"
-	GetUnloadData ApiPath = "unload/getData"
-	GetBoxesReady ApiPath = "unload/getBoxesReadyToSend"
+	PriceSearch   apiPath = "price/search"
+	GetStockPrice apiPath = "price/getStockPrice"
 
-	GetPositionInfo ApiPath = "order/getPositionInfo"
+	GetUnloads    apiPath = "unload/search"
+	GetUnloadData apiPath = "unload/getData"
+	GetBoxesReady apiPath = "unload/getBoxesReadyToSend"
 
-	GetSuppliers        ApiPath = "info/getSuppliers"
-	GetBrands           ApiPath = "info/getBrands"
-	GetBrandGroups      ApiPath = "info/getBrandGroups"
-	GetProductInfo      ApiPath = "info/getProductInfo"
-	GetCurrencies       ApiPath = "info/getCurrencies"
-	GetBrandsByCode     ApiPath = "info/getBrandsByCode"
-	GetPositionStatuses ApiPath = "info/getPositionStatuses"
+	GetSuppliers        apiPath = "info/getSuppliers"
+	GetBrands           apiPath = "info/getBrands"
+	GetBrandGroups      apiPath = "info/getBrandGroups"
+	GetProductInfo      apiPath = "info/getProductInfo"
+	GetCurrencies       apiPath = "info/getCurrencies"
+	GetBrandsByCode     apiPath = "info/getBrandsByCode"
+	GetPositionStatuses apiPath = "info/getPositionStatuses"
 
-	BasketAdd            ApiPath = "basket/add"
-	GetBasketPositions   ApiPath = "basket/getPositions"
-	BasketDeletePosition ApiPath = "basket/delete"
-	BasketClear          ApiPath = "basket/clear"
+	BasketAdd            apiPath = "basket/add"
+	GetBasketPositions   apiPath = "basket/getPositions"
+	BasketDeletePosition apiPath = "basket/delete"
+	BasketClear          apiPath = "basket/clear"
+
+	GetPositionInfo           apiPath = "order/getPositionInfo"
+	OrderCreate               apiPath = "order/create"
+	GetActiveOrders           apiPath = "order/getActive"
+	OrderSearch               apiPath = "order/search"
+	GetChangedPositions       apiPath = "order/getChangedPositions"
+	GetOrderPositions         apiPath = "order/getOrderPositions"
+	GetOrderPositionsByStatus apiPath = "order/getOrderPositionsByStatus"
 )
 
 const (
@@ -43,7 +54,7 @@ const (
 
 type (
 	Currency string
-	ApiPath  string
+	apiPath  string
 )
 
 type Config struct {
@@ -95,13 +106,13 @@ type ProductInfoRequestBody struct {
 
 type GetUnloadsRequestBody struct {
 	TokenRequestBody
-	FromDate string `json:"fromDate"` //"2023-11-08" for "unload/search"
-	ToDate   string `json:"toDate"`   // for "unload/search"
+	FromDate string `json:"fromDate"` //"2006-02-01"
+	ToDate   string `json:"toDate"`   //"2006-02-01"
 }
 
 type GetUnloadDataRequestBody struct {
 	TokenRequestBody
-	UnloadID int `json:"unloadId"` //for unload/getData
+	UnloadID int `json:"unloadId"`
 }
 
 type BasketAddRequestBody struct {
@@ -109,13 +120,13 @@ type BasketAddRequestBody struct {
 	ProductID int64  `json:"productId"`
 	PriceLogo string `json:"priceLogo"`
 	Quantity  int    `json:"quantity"`
-	Reference string `json:"reference"` //for order/getPositionInfo
+	Reference string `json:"reference"`
 	Comment   string `json:"comment"`
 }
 
 type PositionInfoRequestBody struct {
 	TokenRequestBody
-	Reference string `json:"reference"` //for order/getPositionInfo
+	Reference string `json:"reference"`
 }
 
 type BasketDeletePositionRequestBody struct {
@@ -128,16 +139,43 @@ type BrandsByCodeRequestBody struct {
 	Code string `json:"code"`
 }
 
+type OrderCreateRequestBody struct {
+	TokenRequestBody
+	OrderNumber string `json:"orderNumber"`
+}
+
+type OrderSearchRequestBody struct {
+	TokenRequestBody
+	FromDate string `json:"fromDate"` //"2006-01-02"
+	ToDate   string `json:"toDate"`   //"2006-01-02"
+	OrderNum string `json:"orderNumber"`
+}
+
+type GetChangedPositionsRequestBody struct {
+	TokenRequestBody
+	FromDate string `json:"fromDateTime"` //"2006-01-02"
+}
+
+type GetOrderPositionsRequestBody struct {
+	TokenRequestBody
+	OrderID int `json:"orderId"`
+}
+
+type GetOrderPositionsByStatusRequestBody struct {
+	TokenRequestBody
+	StatusID int `json:"statusId"`
+}
+
 /*
 	Response structs
 */
 
-type SuccessResponseBody struct {
+type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
-type ResponseErrorBody struct {
-	SuccessResponseBody
+type ResponseError struct {
+	SuccessResponse
 	Data struct {
 		Name       string `json:"name"`
 		Status     int    `json:"status"`
@@ -146,11 +184,15 @@ type ResponseErrorBody struct {
 	} `json:"data"`
 }
 
-// ответ на price/search
-// можно использовать и для добавления детали в корзину пользователя
-// проверка по PriceLogo
+type TestConnectResponse struct {
+	Success bool `json:"success"`
+	Data    struct {
+		TestString string `json:"testString"`
+	} `json:"data"`
+}
+
 type PriceSearchResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Details []FoundDetail `json:"data"`
 }
 
@@ -181,14 +223,13 @@ type OfferSupplier struct {
 	DeliveryDays    int                 `json:"deliveryTime"`
 	DeliveryDate    utilits.CustomTime  `json:"deliveryDate"`
 	DeliveryPercent int                 `json:"deliveryPercent"`
-	PriceChangeDate utilits.CustomTime  `json:"priceChangeDate"` //дата-время последнего обновления прайса поставщика
+	PriceChangeDate utilits.CustomTime  `json:"priceChangeDate"`
 	IsReturn        utilits.CustomBool  `json:"isReturn"`
 	IsPriceFinal    utilits.CustomBool  `json:"isPriceFinal"`
 }
 
-// ответ на info/getProductInfo для получения изображений и списка аналогов
 type ProductInfo struct {
-	SuccessResponseBody
+	SuccessResponse
 	Data struct {
 		ProductID      int                   `json:"productId"`
 		Brand          string                `json:"brand"`
@@ -214,7 +255,7 @@ type ProductInfo struct {
 }
 
 type SuppliersResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Suppliers []Supplier `json:"data"`
 }
 
@@ -233,7 +274,7 @@ type Supplier struct {
 }
 
 type BrandGroupsResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	BrandGroups []BrandGroup `json:"data"`
 }
 
@@ -254,15 +295,14 @@ type Brand struct {
 	IsOriginal utilits.CustomBool `json:"isOriginal"`
 }
 
-// Список отгрузок за указанный период
 type UnloadsResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Unloads []Unload `json:"data"`
 }
 
 type Unload struct {
 	UnloadID       int                   `json:"unloadId"`
-	CreateTime     utilits.CustomTime    `json:"createTime"` //"2023-11-08 17:19:00.882505",
+	CreateTime     utilits.CustomTime    `json:"createTime"` //"2006-01-02 15:04:05.000000",
 	BoxQuantity    int                   `json:"boxQuantity"`
 	SumPositions   utilits.CustomFloat64 `json:"sumPositions"`
 	SumWorks       int                   `json:"sumWorks"`
@@ -272,9 +312,8 @@ type Unload struct {
 	CarrierWaybill interface{}           `json:"carrierWaybill"` // maybe null
 }
 
-// информация по отгрузке
 type UnloadResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Unload UnloadData `json:"data"`
 }
 type UnloadData struct {
@@ -294,8 +333,8 @@ type UnloadBox struct {
 
 type UnloadPosition struct {
 	BoxID           int     `json:"boxId"`
-	OrderID         int     `json:"orderId"`     //номер заказа в ТМ
-	OrderNumber     string  `json:"orderNumber"` //номер заказа в ТМ
+	OrderID         int     `json:"orderId"`     //номер заказа в ТМ в цифровом типе
+	OrderNumber     string  `json:"orderNumber"` //номер заказа в ТМ в строковом типе
 	OrderPositionID int     `json:"orderPositionId"`
 	PriceLogo       string  `json:"priceLogo"`
 	Brand           string  `json:"brand"`
@@ -308,31 +347,29 @@ type UnloadPosition struct {
 	PriceFinal      float64 `json:"priceFinal"`
 	Currency        string  `json:"currency"`
 	Reference       string  `json:"reference"` //!отдает в верхнем регистре
-	Comment         string  `json:"comment"`   //комментарий к клиенту
+	Comment         string  `json:"comment"`
 	AdminComment    string  `json:"adminComment"`
 	Weight          float64 `json:"weight"`
 	Sticker         string  `json:"sticker"`
 }
 
-// Получение коробок готовых к отгрузке
-// возможно не понадобится
 type BoxesReadyToSendResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	ReadyBoxes []UnloadBox `json:"data"`
 }
 
 type ProductInfoResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Data struct {
 		ProductID      int     `json:"productId"`
-		Brand          string  `json:"brand"`          //Нужно
-		Code           string  `json:"code"`           //Нужно
-		DescriptionRus string  `json:"descriptionRus"` //Нужно
+		Brand          string  `json:"brand"`
+		Code           string  `json:"code"`
+		DescriptionRus string  `json:"descriptionRus"`
 		DescriptionUa  string  `json:"descriptionUa"`
 		Weight         float64 `json:"weight"`
 		Volume         int     `json:"volume"`
 		Images         []struct {
-			Image string `json:"image"` //Нужно
+			Image string `json:"image"`
 		} `json:"images"`
 		Properties []interface{} `json:"properties"`
 		Analogs    []struct {
@@ -348,15 +385,15 @@ type ProductInfoResponse struct {
 }
 
 type BasketAddResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Data struct {
 		BasketID int `json:"basketId"`
 	} `json:"data"`
 }
 
-type PositionInfoResponse struct {
-	SuccessResponseBody
-	Data []Position `json:"data"` //всегда 1 позиция
+type PositionsInfoResponse struct {
+	SuccessResponse
+	Positions []Position `json:"data"` //всегда 1 позиция
 }
 
 type Position struct {
@@ -367,7 +404,7 @@ type Position struct {
 	BrandID         int                   `json:"brandId"`
 	Brand           string                `json:"brand"`
 	Code            string                `json:"code"`                  //приходит неочищенный
-	ReplaceCode     string                `json:"replaceCode,omitempty"` //если они меняют номер при заказе
+	ReplaceCode     string                `json:"replaceCode,omitempty"` //если в тм меняют номер при заказе
 	DescriptionRus  string                `json:"descriptionRus,omitempty"`
 	DescriptionUa   string                `json:"descriptionUa,omitempty"`
 	Price           utilits.CustomFloat64 `json:"price"`
@@ -382,11 +419,11 @@ type StatePosition struct {
 	Quantity          int                `json:"quantity"`
 	StatusID          int                `json:"statusId"`
 	Status            string             `json:"status"`
-	StatusChangedDate utilits.CustomTime `json:"statusChangedDate"` //"2023-10-24 17:28:02.716754"
+	StatusChangedDate utilits.CustomTime `json:"statusChangedDate"` //"2006-01-02 15:04:05.000000"
 }
 
 type BasketPositionsResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Positions []struct {
 		BasketID int `json:"basketId"`
 		Position
@@ -394,7 +431,7 @@ type BasketPositionsResponse struct {
 }
 
 type CurrenciesResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Currencies []struct {
 		Currency string  `json:"currency"`
 		Rate     float64 `json:"rate"`
@@ -402,7 +439,7 @@ type CurrenciesResponse struct {
 }
 
 type BrandsByCodeResponse struct {
-	SuccessResponseBody
+	SuccessResponse
 	Data []struct {
 		BrandID        int    `json:"brandId"`
 		Brand          string `json:"brand"`
@@ -422,5 +459,38 @@ type PositionStatusesResponse struct {
 	} `json:"data"`
 }
 
-// К крупногабаритным (объемным) деталям относятся:
-// Детали кузова – капоты, крылья, двери, крыши, обшивка потолка крыши, крышка багажника, передняя панель радиатора, рейлинги верхней корзины, бампера, подкрыльники, корпуса панели приборов (торпеды), спойлер, накладки и спойлера бампера.
+type Order struct {
+	OrderID     int                   `json:"orderId"`
+	OrderNumber string                `json:"orderNumber"`
+	Sum         utilits.CustomFloat64 `json:"sum"`
+	StatusID    utilits.CustomInt     `json:"statusId"`
+	Status      string                `json:"status"`
+	CreateTime  utilits.CustomTime    `json:"createTime"` //"2023-11-09 13:40:39"
+}
+
+type OrderResponse struct {
+	Success bool  `json:"success"`
+	Order   Order `json:"data"`
+}
+
+type OrdersResponse struct {
+	Success bool    `json:"success"`
+	Orders  []Order `json:"data"`
+}
+
+type StockPriceResponse struct {
+	Success  bool           `json:"success"`
+	Products []StockProduct `json:"data"`
+}
+
+type StockProduct struct {
+	ProductID      int                   `json:"productId"`
+	Brand          string                `json:"brand"`
+	Code           string                `json:"code"`
+	DescriptionRus string                `json:"descriptionRus"`
+	Quantity       int                   `json:"quantity"`
+	Price          utilits.CustomFloat64 `json:"price"`
+	Currency       string                `json:"currency"`
+	CodePrinted    string                `json:"codePrinted"`
+	PriceForRemote utilits.CustomFloat64 `json:"priceForRemote"`
+}

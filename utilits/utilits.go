@@ -18,7 +18,7 @@ type (
 		Int int
 	}
 	CustomBool bool
-	CustomTime time.Time //"2024-01-16 18:00:00"
+	CustomTime time.Time
 )
 
 const QUOTES_BYTE = 34
@@ -105,11 +105,6 @@ func (ct *CustomTime) UnmarshalJSON(data []byte) error {
 	}
 	return fmt.Errorf(`CustomTime: parsing "%s": unknown value`, string(data))
 }
-
-// func (cd CustomDate) MarshalJSON() ([]byte, error) {
-// 	json, err := json.Marshal(cd)
-// 	return json, err
-// }
 
 func BoolToInt(v bool) int {
 	if v {
