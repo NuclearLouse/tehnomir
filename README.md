@@ -23,7 +23,7 @@ func main() {
 	cfg := tehnomir.DefaultConfig()
 	cfg.Token = TOKEN
 	tm := tehnomir.New(cfg)
-	if err := tm.TestConnect("my custom test phrease"); err != nil {
+	if err := tm.TestConnect("my custom test phrase"); err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Println("Test: OK!")
