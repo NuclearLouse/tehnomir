@@ -18,7 +18,7 @@ type Client struct {
 }
 
 func New(cfg *Config) *Client {
-	return &Client{cfg: cfg, client: http.DefaultClient}
+	return &Client{cfg: cfg, client: &http.Client{Timeout: cfg.Timeout}}
 }
 
 func (c *Client) newRequest(path apiPath, body ...any) (*http.Response, error) {
