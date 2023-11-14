@@ -237,7 +237,7 @@ type ProductInfo struct {
 		DescriptionRus string                `json:"descriptionRus"`
 		DescriptionUa  string                `json:"descriptionUa"`
 		Weight         utilits.CustomFloat64 `json:"weight"`
-		Volume         int                   `json:"volume"`
+		Volume         utilits.CustomFloat64 `json:"volume"`
 		Images         []struct {
 			Image string `json:"image"`
 		} `json:"images"`
@@ -249,7 +249,7 @@ type ProductInfo struct {
 			DescriptionRus string                `json:"descriptionRus"`
 			DescriptionUa  string                `json:"descriptionUa"`
 			Weight         utilits.CustomFloat64 `json:"weight"`
-			Volume         float64               `json:"volume"`
+			Volume         utilits.CustomFloat64 `json:"volume"`
 		} `json:"analogs"`
 	} `json:"data"`
 }
@@ -361,25 +361,25 @@ type BoxesReadyToSendResponse struct {
 type ProductInfoResponse struct {
 	SuccessResponse
 	Data struct {
-		ProductID      int     `json:"productId"`
-		Brand          string  `json:"brand"`
-		Code           string  `json:"code"`
-		DescriptionRus string  `json:"descriptionRus"`
-		DescriptionUa  string  `json:"descriptionUa"`
-		Weight         float64 `json:"weight"`
-		Volume         int     `json:"volume"`
+		ProductID      int                   `json:"productId"`
+		Brand          string                `json:"brand"`
+		Code           string                `json:"code"`
+		DescriptionRus string                `json:"descriptionRus"`
+		DescriptionUa  string                `json:"descriptionUa"`
+		Weight         float64               `json:"weight"`
+		Volume         utilits.CustomFloat64 `json:"volume"`
 		Images         []struct {
 			Image string `json:"image"`
 		} `json:"images"`
 		Properties []interface{} `json:"properties"`
 		Analogs    []struct {
-			ProductID      int     `json:"productId"`
-			Brand          string  `json:"brand"`
-			Code           string  `json:"code"`
-			DescriptionRus string  `json:"descriptionRus"`
-			DescriptionUa  string  `json:"descriptionUa"`
-			Weight         float64 `json:"weight"`
-			Volume         int     `json:"volume"`
+			ProductID      int                   `json:"productId"`
+			Brand          string                `json:"brand"`
+			Code           string                `json:"code"`
+			DescriptionRus string                `json:"descriptionRus"`
+			DescriptionUa  string                `json:"descriptionUa"`
+			Weight         float64               `json:"weight"`
+			Volume         utilits.CustomFloat64 `json:"volume"`
 		} `json:"analogs"`
 	} `json:"data"`
 }
