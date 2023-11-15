@@ -228,32 +228,6 @@ type OfferSupplier struct {
 	IsPriceFinal    utilits.CustomBool  `json:"isPriceFinal"`
 }
 
-type ProductInfo struct {
-	SuccessResponse
-	Data struct {
-		ProductID      int                   `json:"productId"`
-		Brand          string                `json:"brand"`
-		Code           string                `json:"code"`
-		DescriptionRus string                `json:"descriptionRus"`
-		DescriptionUa  string                `json:"descriptionUa"`
-		Weight         utilits.CustomFloat64 `json:"weight"`
-		Volume         utilits.CustomFloat64 `json:"volume"`
-		Images         []struct {
-			Image string `json:"image"`
-		} `json:"images"`
-		Properties []interface{} `json:"properties"`
-		Analogs    []struct {
-			ProductID      int                   `json:"productId"`
-			Brand          string                `json:"brand"`
-			Code           string                `json:"code"`
-			DescriptionRus string                `json:"descriptionRus"`
-			DescriptionUa  string                `json:"descriptionUa"`
-			Weight         utilits.CustomFloat64 `json:"weight"`
-			Volume         utilits.CustomFloat64 `json:"volume"`
-		} `json:"analogs"`
-	} `json:"data"`
-}
-
 type SuppliersResponse struct {
 	SuccessResponse
 	Suppliers []Supplier `json:"data"`
