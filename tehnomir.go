@@ -388,8 +388,16 @@ type StatePosition struct {
 type BasketPositionsResponse struct {
 	SuccessResponseBody
 	Positions []struct {
-		BasketID int `json:"basketId"`
-		Position
+		BasketID  int    `json:"basketId"`
+		PriceLogo string `json:"priceLogo"`
+		BrandID   int    `json:"brandId"`
+		Brand     string `json:"brand"`
+		Code      string `json:"code"`
+		Quantity  int    `json:"quantity"`
+		Price     int    `json:"price"`
+		Currency  string `json:"currency"`
+		Reference string `json:"reference"`
+		Comment   string `json:"comment"`
 	} `json:"data"`
 }
 
