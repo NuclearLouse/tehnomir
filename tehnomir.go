@@ -106,8 +106,8 @@ type ProductInfoRequestBody struct {
 
 type GetUnloadsRequestBody struct {
 	TokenRequestBody
-	FromDate string `json:"fromDate"` //"2006-02-01"
-	ToDate   string `json:"toDate"`   //"2006-02-01"
+	FromDate string `json:"fromDate"` //"2006-01-02"
+	ToDate   string `json:"toDate"`   //"2006-01-02"
 }
 
 type GetUnloadDataRequestBody struct {
@@ -299,9 +299,9 @@ type UnloadBox struct {
 	BoxID        int                   `json:"boxId"`
 	SumPositions utilits.CustomFloat64 `json:"sumPositions"`
 	SumWorks     utilits.CustomFloat64 `json:"sumWorks"` //стоимость доставки
-	Length       int                   `json:"length"`
-	Width        int                   `json:"width"`
-	Height       int                   `json:"height"`
+	Length       utilits.CustomFloat64 `json:"length"`
+	Width        utilits.CustomFloat64 `json:"width"`
+	Height       utilits.CustomFloat64 `json:"height"`
 	Weight       utilits.CustomFloat64 `json:"weight"`
 }
 

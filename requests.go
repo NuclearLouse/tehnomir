@@ -254,7 +254,7 @@ func (c *Client) GetProductInfo(code string, brand int) (*ProductInfoResponse, e
 }
 
 func (c *Client) GetUnloads(from, to time.Time) (*UnloadsResponse, error) {
-	timeFormat := "2006-02-01"
+	timeFormat := "2006-01-02"
 	var res UnloadsResponse
 	if err := c.requestAndDecode(GetUnloads, &res, &GetUnloadsRequestBody{
 		FromDate: from.Format(timeFormat),
