@@ -12,6 +12,7 @@ var ErrBadResponse error = fmt.Errorf("bad response")
 const (
 	EUR Currency = "EUR"
 	USD Currency = "USD"
+	UAH Currency = "UAH"
 
 	TestConnect apiPath = "test/connect"
 
