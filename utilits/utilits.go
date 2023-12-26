@@ -1,6 +1,7 @@
 package utilits
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -37,12 +38,12 @@ func (cb *CustomBool) UnmarshalJSON(data []byte) error {
 
 func (cf *CustomFloat64) UnmarshalJSON(data []byte) error {
 	if data[0] == QUOTES_BYTE {
-		if err := json.Unmarshal(data[1:len(data)-1], &cf.Float64); err != nil {
-			return fmt.Errorf("CustomFloat64: UnmarshalJSON: %w", err)
+		if err := json.Unmarshal(bytes.Replace(data[1:len(data)-1], []byte{44}, []byte{}, -1), &cf.Float64); err != nil {
+			return fmt.Errorf("CustomFloat64: UnmarshalJSON with quotes data [%s]: %w", string(data[1:len(data)-1]), err)
 		}
 	} else {
 		if err := json.Unmarshal(data, &cf.Float64); err != nil {
-			return fmt.Errorf("CustomFloat64: UnmarshalJSON: %w", err)
+			return fmt.Errorf("CustomFloat64: UnmarshalJSON without quotes data [%s]: %w", string(data), err)
 		}
 	}
 	return nil
