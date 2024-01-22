@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -18,12 +19,25 @@ type Client struct {
 }
 
 func New(cfg *Config) *Client {
-	return &Client{cfg: cfg, client: &http.Client{Timeout: cfg.Timeout}}
+	return &Client{
+		cfg: cfg,
+		client: &http.Client{
+			Timeout: 5 * time.Second,
+			Transport: &http.Transport{
+				DialContext:           (&net.Dialer{Timeout: time.Second}).DialContext,
+				TLSHandshakeTimeout:   time.Second,
+				ResponseHeaderTimeout: time.Second * 3,
+				MaxIdleConns:          100,
+				MaxIdleConnsPerHost:   100,
+				IdleConnTimeout:       60 * time.Second,
+			},
+		},
+	}
 }
 
 func (c *Client) newRequest(path apiPath, body ...any) (*http.Response, error) {
 	var reqbody any
-	if body == nil {		
+	if body == nil {
 		reqbody = TokenRequestBody{
 			Token: c.cfg.Token,
 		}
@@ -136,7 +150,7 @@ func (c *Client) makeRequestBody(path apiPath, body any) any {
 func (c *Client) requestAndDecode(request apiPath, response any, requestbody ...any) error {
 	var (
 		body any
-		err error
+		err  error
 		resp *http.Response
 	)
 	if requestbody != nil {
@@ -148,7 +162,7 @@ func (c *Client) requestAndDecode(request apiPath, response any, requestbody ...
 	} else {
 		resp, err = c.newRequest(request)
 	}
-	
+
 	if err != nil {
 		return err
 	}
