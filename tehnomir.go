@@ -12,6 +12,7 @@ var ErrBadResponse error = fmt.Errorf("bad response")
 const (
 	EUR Currency = "EUR"
 	USD Currency = "USD"
+	UAH Currency = "UAH"
 
 	TestConnect apiPath = "test/connect"
 
@@ -106,8 +107,8 @@ type ProductInfoRequestBody struct {
 
 type GetUnloadsRequestBody struct {
 	TokenRequestBody
-	FromDate string `json:"fromDate"` //"2006-02-01"
-	ToDate   string `json:"toDate"`   //"2006-02-01"
+	FromDate string `json:"fromDate"` //"2006-01-02"
+	ToDate   string `json:"toDate"`   //"2006-01-02"
 }
 
 type GetUnloadDataRequestBody struct {
@@ -299,9 +300,9 @@ type UnloadBox struct {
 	BoxID        int                   `json:"boxId"`
 	SumPositions utilits.CustomFloat64 `json:"sumPositions"`
 	SumWorks     utilits.CustomFloat64 `json:"sumWorks"` //стоимость доставки
-	Length       int                   `json:"length"`
-	Width        int                   `json:"width"`
-	Height       int                   `json:"height"`
+	Length       utilits.CustomFloat64 `json:"length"`
+	Width        utilits.CustomFloat64 `json:"width"`
+	Height       utilits.CustomFloat64 `json:"height"`
 	Weight       utilits.CustomFloat64 `json:"weight"`
 }
 
@@ -399,8 +400,16 @@ type StatePosition struct {
 type BasketPositionsResponse struct {
 	SuccessResponse
 	Positions []struct {
-		BasketID int `json:"basketId"`
-		Position
+		BasketID  int    `json:"basketId"`
+		PriceLogo string `json:"priceLogo"`
+		BrandID   int    `json:"brandId"`
+		Brand     string `json:"brand"`
+		Code      string `json:"code"`
+		Quantity  int    `json:"quantity"`
+		Price     int    `json:"price"`
+		Currency  string `json:"currency"`
+		Reference string `json:"reference"`
+		Comment   string `json:"comment"`
 	} `json:"data"`
 }
 
